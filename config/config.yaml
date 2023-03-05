@@ -1,0 +1,9 @@
+server:
+  addr: "127.0.0.1"
+  port: "80"
+  openProxy: true
+proxy:
+  addr: "127.0.0.1"
+  port: "7890"
+
+
