@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	OpenAiToken = "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" // ChatGPT Token
+	OpenAiToken = "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" // ChatGPT Token
 	ProxyPath   = "http://127.0.0.1:7890"
 )
 

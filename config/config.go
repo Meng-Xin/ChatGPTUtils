@@ -42,6 +42,10 @@ type Server struct {
 	OpenProxy bool   `json:"open_proxy" yaml:"OpenProxy"`
 }
 
+func (s *Server) DSN() string {
+	return s.Addr + ":" + s.Port
+}
+
 type Proxy struct {
 	Addr string `json:"addr" yaml:"addr"`
 	Port string `json:"port" yaml:"port"`
