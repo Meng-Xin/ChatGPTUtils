@@ -10,7 +10,7 @@ import (
 func TestAddChatWindow(t *testing.T) {
 	// 加载初始化文件
 	initialize.GlobalInit()
-	chatObj := &ChatInfo{
+	chatObj := &ChatReq{
 		Msg: []openai.ChatCompletionMessage{{"user", "你知道那些游戏算法"}},
 	}
 	res := chatObj.AddChatWindow()
