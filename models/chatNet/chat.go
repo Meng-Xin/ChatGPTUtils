@@ -6,6 +6,15 @@ import (
 	gogpt "github.com/sashabaranov/go-gpt3"
 )
 
+// ChatReq Chat聊天通用信息
+type ChatReq struct {
+	Model  ChatModel                     `json:"model"`   //会话模型
+	Role   ChatRole                      `json:"role"`    //会话角色
+	ConnId uint32                        `json:"conn_id"` //会话id
+	Token  string                        `json:"token"`   //会话Token有就用，没有就默认
+	Msg    []gogpt.ChatCompletionMessage `json:"msg"`
+}
+
 // ChatModel ChatGPT Model
 type ChatModel = int
 

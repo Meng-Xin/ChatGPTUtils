@@ -7,6 +7,7 @@ import (
 	"errors"
 	gogpt "github.com/sashabaranov/go-gpt3"
 	"net"
+	"net/http"
 	"sync"
 )
 
@@ -24,6 +25,8 @@ type ChatConnection struct {
 	// 当前连接上下文[创建链接时指定]
 	Ctx context.Context
 
+	// HttpClient gogpt库小写的Conn导致无法获取到http链接指针，只能自己拿
+	client *http.Client
 	//  当前链接状态
 	isClosed bool
 	// 当前链接模型[创建链接时指定]
@@ -37,13 +40,15 @@ type ChatConnection struct {
 }
 
 // NewChatConn 创建一个chatGPT connection 实例，connID：链接id，model：GPT模型 role：GPT角色 token：用户自定义Token
-func NewChatConn(connId uint32, model ChatModel, role ChatRole, token string) *ChatConnection {
+func NewChatConn(connId uint32, req ChatReq) *ChatConnection {
+	connConfig := GetProxyConfig(req.Token)
 	c := &ChatConnection{
-		Conn:     gogpt.NewClientWithConfig(GetProxyConfig(token)),
+		Conn:     gogpt.NewClientWithConfig(connConfig),
 		ConnID:   connId,
 		Ctx:      context.Background(),
-		model:    SwitchGPTModel(model),
-		role:     SwitchGPTRole(role),
+		client:   connConfig.HTTPClient,
+		model:    SwitchGPTModel(req.Model),
+		role:     SwitchGPTRole(req.Role),
 		property: make(map[string]interface{}),
 	}
 	// 添加到管理模块
@@ -57,8 +62,9 @@ func (c ChatConnection) Start() {
 }
 
 func (c ChatConnection) Stop() {
-	//TODO 链接关闭，执行回调函数。
-	panic("implement me")
+	// 关闭Http链接
+	c.isClosed = true
+	c.client.CloseIdleConnections()
 }
 
 func (c ChatConnection) GetConn() *gogpt.Client {
@@ -74,14 +80,17 @@ func (c ChatConnection) RemoteAddr() net.Addr {
 	panic("implement me")
 }
 
-func (c ChatConnection) SendMsg(data []gogpt.ChatCompletionMessage) (gogpt.ChatCompletionResponse, error) {
+func (c ChatConnection) SendMsg(data []gogpt.ChatCompletionMessage) (resp gogpt.ChatCompletionResponse, err error) {
+	if c.isClosed {
+		return resp, errors.New("The httpconnection is closed")
+	}
 	// 替换角色
 	for k, datum := range data {
 		if datum.Role == "" {
 			data[k].Role = c.role
 		}
 	}
-	resp, err := c.Conn.CreateChatCompletion(
+	resp, err = c.Conn.CreateChatCompletion(
 		c.Ctx,
 		gogpt.ChatCompletionRequest{
 			Model:    gogpt.GPT3Dot5Turbo,

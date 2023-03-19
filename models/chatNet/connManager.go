@@ -30,6 +30,7 @@ func (c ConnManager) Add(conn core.IConnection) {
 func (c ConnManager) Remove(conn core.IConnection) {
 	c.chatConnLock.Lock()
 	defer c.chatConnLock.Unlock()
+	conn.Stop()
 	delete(c.chatConnections, conn.GetConnID())
 }
 

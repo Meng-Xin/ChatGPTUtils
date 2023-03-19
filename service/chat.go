@@ -9,19 +9,15 @@ import (
 	openai "github.com/sashabaranov/go-gpt3"
 )
 
-type ChatReq struct {
-	Model  chatNet.ChatModel              `json:"model"`   //会话模型
-	Role   chatNet.ChatRole               `json:"role"`    //会话角色
-	ConnId uint32                         `json:"conn_id"` //会话id
-	Token  string                         `json:"token"`   //会话Token有就用，没有就默认
-	Msg    []openai.ChatCompletionMessage `json:"msg"`
+type ChatService struct {
+	ChatReq chatNet.ChatReq `json:"chat_req"`
 }
 
 // AddChatWindow 创建对话窗口
-func (c *ChatReq) AddChatWindow() public.Response {
+func (c *ChatService) AddChatWindow() public.Response {
 	code := e.SUCCESS
 	// 使用ChatConnManager 进行调用
-	conn := chatNet.NewChatConn(global.SourceConnID.GetConnID(), c.Model, c.Role, c.Token)
+	conn := chatNet.NewChatConn(global.SourceConnID.GetConnID(), c.ChatReq)
 	if conn == nil {
 		code = e.ChatGPT_API_Create_Failed
 		return public.Response{
@@ -36,11 +32,11 @@ func (c *ChatReq) AddChatWindow() public.Response {
 	}
 }
 
-// RemoveChatWindow remove chatGPT Windows And remove chatConn
-func (c *ChatReq) RemoveChatWindow() public.Response {
+// RemoveChatWindow remove chatGPT Windows And remove chatConn[需要校验删除用户信息]
+func (c *ChatService) RemoveChatWindow() public.Response {
 	code := e.SUCCESS
 	// 删除对应conn
-	conn, err := global.ChatConnManager.Get(c.ConnId)
+	conn, err := global.ChatConnManager.Get(c.ChatReq.ConnId)
 	if err != nil {
 		code = e.ChatGPT_Manager_GetConnFail
 		return public.Response{
@@ -55,11 +51,11 @@ func (c *ChatReq) RemoveChatWindow() public.Response {
 	}
 }
 
-// GetChatWindow get the created link and send msg
-func (c *ChatReq) GetChatWindow() public.Response {
+// GetChatWindow get the created link and send msg[需要校验删除用户信息]
+func (c *ChatService) GetChatWindow() public.Response {
 	code := e.SUCCESS
 	// 获取已创建的会话连接
-	conn, err := global.ChatConnManager.Get(c.ConnId)
+	conn, err := global.ChatConnManager.Get(c.ChatReq.ConnId)
 	if err != nil {
 		code = e.ChatGPT_Manager_GetConnFail
 		return public.Response{
@@ -68,7 +64,7 @@ func (c *ChatReq) GetChatWindow() public.Response {
 		}
 	}
 	// 发送消息
-	resData, err := conn.SendMsg(c.Msg)
+	resData, err := conn.SendMsg(c.ChatReq.Msg)
 	resMsg := chatNet.GetMsg(resData)
 	if err != nil {
 		code = e.ChatGPT_API_Inaccessible
@@ -84,10 +80,10 @@ func (c *ChatReq) GetChatWindow() public.Response {
 	}
 }
 
-// SetChatWindow set connChatConn
-func (c *ChatReq) SetChatWindow() public.Response {
+// SetChatWindow set connChatConn[需要校验删除用户信息]
+func (c *ChatService) SetChatWindow() public.Response {
 	code := e.SUCCESS
-	conn, err := global.ChatConnManager.Get(c.ConnId)
+	conn, err := global.ChatConnManager.Get(c.ChatReq.ConnId)
 	if err != nil {
 		code = e.ChatGPT_Manager_GetConnFail
 		return public.Response{

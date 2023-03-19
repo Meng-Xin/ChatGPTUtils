@@ -8,7 +8,7 @@ import (
 
 func CreateChat(c *gin.Context) {
 	// 拿到对话信息创建对话
-	var chatInfo *service.ChatReq
+	var chatInfo *service.ChatService
 	err := c.ShouldBindJSON(&chatInfo)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -21,7 +21,7 @@ func CreateChat(c *gin.Context) {
 
 func GetChat(c *gin.Context) {
 	// 拿到对话信息创建对话
-	var chatInfo *service.ChatReq
+	var chatInfo *service.ChatService
 	err := c.ShouldBindJSON(&chatInfo)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -34,7 +34,7 @@ func GetChat(c *gin.Context) {
 
 func SetChat(c *gin.Context) {
 	// 拿到对话信息创建对话
-	var chatInfo *service.ChatReq
+	var chatInfo *service.ChatService
 	err := c.ShouldBindJSON(&chatInfo)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -47,7 +47,7 @@ func SetChat(c *gin.Context) {
 
 func DeleteChat(c *gin.Context) {
 	// 拿到对话信息创建对话
-	var chatInfo *service.ChatReq
+	var chatInfo *service.ChatService
 	err := c.ShouldBindJSON(&chatInfo)
 	if err != nil {
 		fmt.Println(err.Error())
