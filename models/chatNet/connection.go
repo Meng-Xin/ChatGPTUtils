@@ -37,9 +37,9 @@ type ChatConnection struct {
 }
 
 // NewChatConn 创建一个chatGPT connection 实例，connID：链接id，model：GPT模型 role：GPT角色
-func NewChatConn(connId uint32, model ChatModel, role ChatRole) *ChatConnection {
+func NewChatConn(connId uint32, model ChatModel, role ChatRole, token string) *ChatConnection {
 	c := &ChatConnection{
-		Conn:     gogpt.NewClientWithConfig(global.OpenAiProxy),
+		Conn:     gogpt.NewClientWithConfig(GetProxyConfig(token)),
 		ConnID:   connId,
 		Ctx:      context.Background(),
 		model:    SwitchGPTModel(model),

@@ -13,6 +13,7 @@ type ChatReq struct {
 	Model  chatNet.ChatModel              `json:"model"`   //会话模型
 	Role   chatNet.ChatRole               `json:"role"`    //会话角色
 	ConnId uint32                         `json:"conn_id"` //会话id
+	Token  string                         `json:"token"`   //会话Token有就用，没有就默认
 	Msg    []openai.ChatCompletionMessage `json:"msg"`
 }
 
@@ -20,7 +21,7 @@ type ChatReq struct {
 func (c *ChatReq) AddChatWindow() public.Response {
 	code := e.SUCCESS
 	// 使用ChatConnManager 进行调用
-	conn := chatNet.NewChatConn(global.SourceConnID.GetConnID(), c.Model, c.Role)
+	conn := chatNet.NewChatConn(global.SourceConnID.GetConnID(), c.Model, c.Role, c.Token)
 	if conn == nil {
 		code = e.ChatGPT_API_Create_Failed
 		return public.Response{

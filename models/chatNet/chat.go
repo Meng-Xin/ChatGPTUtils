@@ -1,6 +1,10 @@
 package chatNet
 
-import gogpt "github.com/sashabaranov/go-gpt3"
+import (
+	"chatGPT/global"
+	"chatGPT/utils"
+	gogpt "github.com/sashabaranov/go-gpt3"
+)
 
 // ChatModel ChatGPT Model
 type ChatModel = int
@@ -57,4 +61,15 @@ func SwitchGPTRole(role ChatRole) (rely string) {
 // GetMsg 获取本次对话文本
 func GetMsg(chatRes gogpt.ChatCompletionResponse) string {
 	return chatRes.Choices[0].Message.Content
+}
+
+// GetProxyConfig 获取代理配置
+func GetProxyConfig(token string) gogpt.ClientConfig {
+	// 是否存在自定义Token，使用用户Token
+	if token != "" {
+		return utils.InitOpenAiAgent(token, global.ProxyPath)
+	} else {
+		// 使用默认Token
+		return global.OpenAiProxy
+	}
 }
