@@ -36,7 +36,7 @@ type ChatConnection struct {
 	propertyLock sync.RWMutex
 }
 
-// NewChatConn 创建一个chatGPT connection 实例，connID：链接id，model：GPT模型 role：GPT角色
+// NewChatConn 创建一个chatGPT connection 实例，connID：链接id，model：GPT模型 role：GPT角色 token：用户自定义Token
 func NewChatConn(connId uint32, model ChatModel, role ChatRole, token string) *ChatConnection {
 	c := &ChatConnection{
 		Conn:     gogpt.NewClientWithConfig(GetProxyConfig(token)),
