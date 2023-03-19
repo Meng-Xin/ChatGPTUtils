@@ -2,33 +2,27 @@ package service
 
 import (
 	"chatGPT/global"
+	"chatGPT/models/chatNet"
 	"chatGPT/pkg/e"
 	"chatGPT/pkg/public"
-	"context"
 	"fmt"
 	openai "github.com/sashabaranov/go-gpt3"
 )
 
 type ChatReq struct {
-	snowID uint64
+	Model  chatNet.ChatModel              `json:"model"`   //会话模型
+	Role   chatNet.ChatRole               `json:"role"`    //会话角色
+	ConnId uint32                         `json:"conn_id"` //会话id
 	Msg    []openai.ChatCompletionMessage `json:"msg"`
 }
 
 // AddChatWindow 创建对话窗口
 func (c *ChatReq) AddChatWindow() public.Response {
 	code := e.SUCCESS
-	client := openai.NewClientWithConfig(global.OpenAiProxy)
-	resp, err := client.CreateChatCompletion(
-		context.Background(),
-		openai.ChatCompletionRequest{
-			Model:    openai.GPT3Dot5Turbo,
-			Messages: c.Msg,
-		},
-	)
-	// 如果接口存在错误那么输出错误日志，但是仍然保留对话
-	if err != nil {
-		code = e.ChatGPT_API_Inaccessible
-		fmt.Printf("ChatGPT Api fail error：%s\n", err)
+	// 使用ChatConnManager 进行调用
+	conn := chatNet.NewChatConn(global.SourceConnID.GetConnID(), c.Model, c.Role)
+	if conn == nil {
+		code = e.ChatGPT_API_Create_Failed
 		return public.Response{
 			Status: code,
 			Msg:    e.GetMsg(code),
@@ -36,16 +30,76 @@ func (c *ChatReq) AddChatWindow() public.Response {
 	}
 	return public.Response{
 		Status: code,
-		Data:   resp,
+		Data:   conn.GetConnID(),
 		Msg:    e.GetMsg(code),
 	}
 }
 
-// RemoveChatWindow
+// RemoveChatWindow remove chatGPT Windows And remove chatConn
+func (c *ChatReq) RemoveChatWindow() public.Response {
+	code := e.SUCCESS
+	// 删除对应conn
+	conn, err := global.ChatConnManager.Get(c.ConnId)
+	if err != nil {
+		code = e.ChatGPT_Manager_GetConnFail
+		return public.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+		}
+	}
+	global.ChatConnManager.Remove(conn)
+	return public.Response{
+		Status: code,
+		Msg:    e.GetMsg(code),
+	}
+}
 
-// GetChatWindow
+// GetChatWindow get the created link and send msg
+func (c *ChatReq) GetChatWindow() public.Response {
+	code := e.SUCCESS
+	// 获取已创建的会话连接
+	conn, err := global.ChatConnManager.Get(c.ConnId)
+	if err != nil {
+		code = e.ChatGPT_Manager_GetConnFail
+		return public.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+		}
+	}
+	// 发送消息
+	resData, err := conn.SendMsg(c.Msg)
+	resMsg := chatNet.GetMsg(resData)
+	if err != nil {
+		code = e.ChatGPT_API_Inaccessible
+		return public.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+		}
+	}
+	return public.Response{
+		Status: code,
+		Data:   resMsg,
+		Msg:    e.GetMsg(code),
+	}
+}
 
-// SetChatWindow
+// SetChatWindow set connChatConn
+func (c *ChatReq) SetChatWindow() public.Response {
+	code := e.SUCCESS
+	conn, err := global.ChatConnManager.Get(c.ConnId)
+	if err != nil {
+		code = e.ChatGPT_Manager_GetConnFail
+		return public.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+		}
+	}
+	conn.SetProperty("noyet", "noyet")
+	return public.Response{
+		Status: code,
+		Msg:    e.GetMsg(code),
+	}
+}
 
 // PingChatMsg 打印输出信息
 func PingChatMsg(msg []openai.ChatCompletionChoice) {
