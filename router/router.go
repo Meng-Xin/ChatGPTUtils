@@ -20,7 +20,10 @@ func NewRouter() *gin.Engine {
 	// V1管理
 	v1 := r.Group("/api/v1")
 	{
-		v1.GET("chat", api.CreateChat)
+		v1.POST("/chat/addWindow", api.CreateChat)
+		v1.GET("/chat/getWindow", api.GetChat)
+		v1.PUT("/chat/setWindow", api.SetChat)
+		v1.DELETE("/chat/deleteWindow", api.DeleteChat)
 	}
 	return r
 }
