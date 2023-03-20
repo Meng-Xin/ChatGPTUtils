@@ -32,8 +32,9 @@ func InitLoadConfig() *AllConfig {
 
 // AllConfig 整合Config
 type AllConfig struct {
-	Server Server `json:"server" yaml:"server"`
-	Proxy  Proxy  `json:"proxy" yaml:"proxy"`
+	Server   Server   `json:"server" yaml:"server"`
+	Proxy    Proxy    `json:"proxy" yaml:"proxy"`
+	ChatConn ChatConn `json:"chat_conn" yaml:"chatConn"`
 }
 
 type Server struct {
@@ -49,4 +50,9 @@ func (s *Server) DSN() string {
 type Proxy struct {
 	Addr string `json:"addr" yaml:"addr"`
 	Port string `json:"port" yaml:"port"`
+}
+
+type ChatConn struct {
+	Timeout         int64 `json:"timeout" yaml:"timeout"`                   // Second
+	IdleConnTimeout int64 `json:"idle_conn_timeout" yaml:"idleConnTimeout"` // Hour
 }

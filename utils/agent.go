@@ -1,7 +1,8 @@
 package utils
 
 import (
-	openai "github.com/sashabaranov/go-gpt3"
+	"chatGPT/global"
+	openai "github.com/sashabaranov/go-openai"
 	"net/http"
 	"net/url"
 	"time"
@@ -15,10 +16,11 @@ func InitOpenAiAgent(token string, proxyPath string) openai.ClientConfig {
 	}
 	transport := &http.Transport{
 		Proxy:           http.ProxyURL(proxyUrl),
-		IdleConnTimeout: 168 * time.Duration(time.Hour),
+		IdleConnTimeout: time.Duration(global.Config.ChatConn.IdleConnTimeout) * time.Hour, // 后续配置文件管理
 	}
 	config.HTTPClient = &http.Client{
 		Transport: transport,
+		Timeout:   time.Second * time.Duration(global.Config.ChatConn.Timeout),
 	}
 	return config
 }

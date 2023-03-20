@@ -5,5 +5,8 @@ server:
 proxy:
   addr: "127.0.0.1"
   port: "7890"
+chatConn:
+  timeout: 10
+  idleConnTimeout: 168
 
 

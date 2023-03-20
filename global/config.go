@@ -3,8 +3,7 @@ package global
 import (
 	"chatGPT/config"
 	"chatGPT/core"
-	"chatGPT/utils"
-	openai "github.com/sashabaranov/go-gpt3"
+	openai "github.com/sashabaranov/go-openai"
 	"sync"
 )
 
@@ -16,9 +15,8 @@ const (
 var (
 	OpenAiProxy     openai.ClientConfig // OpenAIProxy 代理配置
 	Config          *config.AllConfig   // 全局config
-	SnowId          *utils.Worker       // 雪花id
-	ChatConnManager core.IConnManager   // ChatConnManager 连接管理
 	SourceConnID    *ConnID             // SourceConnID 用于生成ConnID
+	ChatConnManager core.IConnManager   // ChatConnManager 连接管理
 )
 
 type ConnID struct {
