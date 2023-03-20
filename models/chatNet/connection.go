@@ -53,6 +53,8 @@ func NewChatConn(connId uint32, req ChatReq) *ChatConnection {
 		role:     SwitchGPTRole(req.Role),
 		property: make(map[string]interface{}),
 	}
+	// 初始聊天记录
+	c.property[HistoryMsgTag] = make([]gogpt.ChatCompletionMessage, 0)
 	// 添加到管理模块
 	global.ChatConnManager.Add(c)
 	return c
@@ -86,19 +88,34 @@ func (c ChatConnection) SendMsg(data []gogpt.ChatCompletionMessage) (resp gogpt.
 	if c.isClosed {
 		return resp, errors.New("The httpconnection is closed")
 	}
+	var historyMsg []gogpt.ChatCompletionMessage
 	// 替换角色
 	for k, datum := range data {
 		if datum.Role == "" {
 			data[k].Role = c.role
 		}
 	}
+	// 获取历史消息并保存玩家对话
+	propVal, err := c.GetProperty(HistoryMsgTag)
+	if err != nil {
+		return gogpt.ChatCompletionResponse{}, err
+	}
+	historyMsg, ok := propVal.([]gogpt.ChatCompletionMessage)
+	if !ok {
+		return gogpt.ChatCompletionResponse{}, errors.New("conn property not found HistoryMsgTag!")
+	}
+	historyMsg = append(historyMsg, data...)
 	resp, err = c.Conn.CreateChatCompletion(
 		c.Ctx,
 		gogpt.ChatCompletionRequest{
 			Model:    gogpt.GPT3Dot5Turbo,
-			Messages: data,
+			Messages: historyMsg,
 		},
 	)
+	// 保存Ai对话
+	aiMsg := GetMsg(resp)
+	historyMsg = append(historyMsg, aiMsg)
+	c.SetProperty(HistoryMsgTag, historyMsg)
 	return resp, err
 }
 

@@ -47,6 +47,13 @@ const (
 	RoleToAgent     ChatRole = 6 // 代理
 )
 
+// ChatPropertyTag
+type ChatPropertyTag = string
+
+const (
+	HistoryMsgTag ChatPropertyTag = "ChatHistory"
+)
+
 func SwitchGPTRole(role ChatRole) (rely string) {
 	switch role {
 	case RoleToSystem:
@@ -68,8 +75,11 @@ func SwitchGPTRole(role ChatRole) (rely string) {
 }
 
 // GetMsg 获取本次对话文本
-func GetMsg(chatRes gogpt.ChatCompletionResponse) string {
-	return chatRes.Choices[0].Message.Content
+func GetMsg(chatRes gogpt.ChatCompletionResponse) gogpt.ChatCompletionMessage {
+	if len(chatRes.Choices) == 0 {
+		return gogpt.ChatCompletionMessage{}
+	}
+	return chatRes.Choices[0].Message
 }
 
 // GetProxyConfig 获取代理配置
