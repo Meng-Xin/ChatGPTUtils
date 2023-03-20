@@ -22,6 +22,7 @@ func NewRouter() *gin.Engine {
 	{
 		v1.POST("/chat/addWindow", api.CreateChat)
 		v1.GET("/chat/getWindow", api.GetChat)
+		v1.GET("/chat/getStream", api.GetChatToStream)
 		v1.PUT("/chat/setWindow", api.SetChat)
 		v1.DELETE("/chat/deleteWindow", api.DeleteChat)
 	}

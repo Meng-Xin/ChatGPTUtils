@@ -1,7 +1,7 @@
 package core
 
 import (
-	gogpt "github.com/sashabaranov/go-gpt3"
+	gogpt "github.com/sashabaranov/go-openai"
 	"net"
 )
 
@@ -16,12 +16,12 @@ type IConnection interface {
 	GetConnID() uint32
 	// RemoteAddr 	获取客户端状态
 	RemoteAddr() net.Addr
-	// SendMsg 		发送消息
-	SendMsg([]gogpt.ChatCompletionMessage) (gogpt.ChatCompletionResponse, error)
 	// SetProperty 	设置连接属性
 	SetProperty(string, interface{})
 	// GetProperty	获取连接属性
 	GetProperty(string) (interface{}, error)
 	// RemoveProperty 移除连接属性
 	RemoveProperty(string)
+	// SendMsg 		发送消息
+	SendMsg([]gogpt.ChatCompletionMessage) (gogpt.ChatCompletionResponse, error)
 }

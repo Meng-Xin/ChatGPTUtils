@@ -3,7 +3,7 @@ package chatNet
 import (
 	"chatGPT/global"
 	"chatGPT/utils"
-	gogpt "github.com/sashabaranov/go-gpt3"
+	gogpt "github.com/sashabaranov/go-openai"
 )
 
 // ChatReq Chat聊天通用信息

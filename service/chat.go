@@ -6,7 +6,7 @@ import (
 	"chatGPT/pkg/e"
 	"chatGPT/pkg/public"
 	"fmt"
-	openai "github.com/sashabaranov/go-gpt3"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 type ChatService struct {
@@ -65,14 +65,15 @@ func (c *ChatService) GetChatWindow() public.Response {
 	}
 	// 发送消息
 	resData, err := conn.SendMsg(c.ChatReq.Msg)
-	resMsg := chatNet.GetMsg(resData)
 	if err != nil {
+		fmt.Println(err.Error())
 		code = e.ChatGPT_API_Inaccessible
 		return public.Response{
 			Status: code,
 			Msg:    e.GetMsg(code),
 		}
 	}
+	resMsg := chatNet.GetMsg(resData)
 	return public.Response{
 		Status: code,
 		Data:   resMsg,
@@ -94,6 +95,38 @@ func (c *ChatService) SetChatWindow() public.Response {
 	conn.SetProperty("noyet", "noyet")
 	return public.Response{
 		Status: code,
+		Msg:    e.GetMsg(code),
+	}
+}
+
+// GetChatToStream get the created link and send msg[需要校验删除用户信息]
+func (c *ChatService) GetChatToStream() public.Response {
+	code := e.SUCCESS
+	// 获取已创建的会话连接
+	conn, err := global.ChatConnManager.Get(c.ChatReq.ConnId)
+	if err != nil {
+		code = e.ChatGPT_Manager_GetConnFail
+		return public.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+		}
+	}
+	// 发送消息
+	msgChan := make(chan string, 1)
+	go func() {
+		defer func() {
+			log := recover()
+			fmt.Println(log)
+			if err != nil {
+				code = e.ChatGPT_Manager_StreamFail
+			}
+			close(msgChan)
+		}()
+		err = conn.(*chatNet.ChatConnection).SendMsgToChatStream(c.ChatReq.Msg, msgChan)
+	}()
+	return public.Response{
+		Status: code,
+		Data:   <-msgChan,
 		Msg:    e.GetMsg(code),
 	}
 }

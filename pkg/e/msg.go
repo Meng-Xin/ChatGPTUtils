@@ -8,6 +8,7 @@ var ErrMsg = map[int]string{
 	ChatGPT_API_Inaccessible:    "ChatGPT 暂时无法访问！",
 	ChatGPT_API_Create_Failed:   "聊天出了点问题！",
 	ChatGPT_Manager_GetConnFail: "获取会话连接失败",
+	ChatGPT_Manager_StreamFail:  "StreamFail",
 }
 
 func GetMsg(code int) string {

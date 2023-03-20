@@ -5,7 +5,9 @@ import (
 	"chatGPT/models"
 	"context"
 	"errors"
-	gogpt "github.com/sashabaranov/go-gpt3"
+	"fmt"
+	gogpt "github.com/sashabaranov/go-openai"
+	"io"
 	"net"
 	"net/http"
 	"sync"
@@ -122,4 +124,46 @@ func (c ChatConnection) RemoveProperty(key string) {
 	c.propertyLock.Lock()
 	defer c.propertyLock.Unlock()
 	delete(c.property, key)
+}
+
+func (c ChatConnection) SendMsgToChatStream(data []gogpt.ChatCompletionMessage, msgChan chan<- string) error {
+	if c.isClosed {
+		return errors.New("The httpconnection is closed")
+	}
+	// 替换角色
+	for k, datum := range data {
+		if datum.Role == "" {
+			data[k].Role = c.role
+		}
+	}
+
+	resp, err := c.Conn.CreateChatCompletionStream(
+		c.Ctx,
+		gogpt.ChatCompletionRequest{
+			Model:    gogpt.GPT3Dot5Turbo,
+			Messages: data,
+			Stream:   true,
+		},
+	)
+	defer resp.Close()
+	if err != nil {
+		fmt.Println("CreateChatCompletionStream Failed error:", err)
+		return nil
+	}
+	fmt.Printf("Stream response: ")
+	for {
+		response, err := resp.Recv()
+		if errors.Is(err, io.EOF) {
+			fmt.Println("\nStream finished")
+			return nil
+		}
+
+		if err != nil {
+			fmt.Printf("\nStream error: %v\n", err)
+			return err
+		}
+		//msgChan <- response.Choices[0].Delta.Content
+		fmt.Println(response.Choices[0].Delta.Content)
+	}
+
 }
