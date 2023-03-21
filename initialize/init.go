@@ -4,7 +4,6 @@ import (
 	"chatGPT/config"
 	"chatGPT/global"
 	"chatGPT/models/chatNet"
-	"chatGPT/utils"
 )
 
 func GlobalInit() {
@@ -13,7 +12,7 @@ func GlobalInit() {
 
 	// 是否开启代理,代理配置初始化
 	if global.Config.Server.OpenProxy {
-		global.OpenAiProxy = utils.InitOpenAiAgent(global.OpenAiToken, global.ProxyPath)
+		global.OpenAiProxy = chatNet.InitOpenAiAgent(global.OpenAiToken, global.ProxyPath)
 	}
 	// 中间件初始化
 

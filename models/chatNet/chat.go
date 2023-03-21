@@ -2,8 +2,10 @@ package chatNet
 
 import (
 	"chatGPT/global"
-	"chatGPT/utils"
 	gogpt "github.com/sashabaranov/go-openai"
+	"net/http"
+	"net/url"
+	"time"
 )
 
 // ChatReq Chat聊天通用信息
@@ -86,9 +88,27 @@ func GetMsg(chatRes gogpt.ChatCompletionResponse) gogpt.ChatCompletionMessage {
 func GetProxyConfig(token string) gogpt.ClientConfig {
 	// 是否存在自定义Token，使用用户Token
 	if token != "" {
-		return utils.InitOpenAiAgent(token, global.ProxyPath)
+		return InitOpenAiAgent(token, global.ProxyPath)
 	} else {
 		// 使用默认Token
 		return global.OpenAiProxy
 	}
+}
+
+// InitOpenAiAgent 初始化ChatGPT代理配置
+func InitOpenAiAgent(token string, proxyPath string) gogpt.ClientConfig {
+	config := gogpt.DefaultConfig(token)
+	proxyUrl, err := url.Parse(proxyPath)
+	if err != nil {
+		panic(err)
+	}
+	transport := &http.Transport{
+		Proxy:           http.ProxyURL(proxyUrl),
+		IdleConnTimeout: time.Duration(global.Config.ChatConn.IdleConnTimeout) * time.Hour, // 后续配置文件管理
+	}
+	config.HTTPClient = &http.Client{
+		Transport: transport,
+		Timeout:   time.Second * time.Duration(global.Config.ChatConn.Timeout),
+	}
+	return config
 }
