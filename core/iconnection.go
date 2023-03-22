@@ -23,5 +23,5 @@ type IConnection interface {
 	// RemoveProperty 移除连接属性
 	RemoveProperty(string)
 	// SendMsg 		发送消息
-	SendMsg([]gogpt.ChatCompletionMessage) (gogpt.ChatCompletionResponse, error)
+	SendMsg(interface{}) (interface{}, error)
 }

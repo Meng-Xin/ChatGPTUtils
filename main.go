@@ -13,5 +13,5 @@ func main() {
 	r := router.NewRouter()
 	r.Run(global.Config.Server.DSN())
 	// 关闭服务器清空所有
-	global.ChatConnManager.ClearConn()
+	defer global.ChatConnManager.ClearConn()
 }

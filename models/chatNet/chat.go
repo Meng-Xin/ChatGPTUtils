@@ -8,14 +8,31 @@ import (
 	"time"
 )
 
-// ChatReq Chat聊天通用信息
-type ChatReq struct {
-	Model  ChatModel                     `json:"model"`   //会话模型
-	Role   ChatRole                      `json:"role"`    //会话角色
-	ConnId uint32                        `json:"conn_id"` //会话id
-	Token  string                        `json:"token"`   //会话Token有就用，没有就默认
-	Msg    []gogpt.ChatCompletionMessage `json:"msg"`
+// PublicProper 通用属性
+type PublicProper struct {
+	ChatGPT  ChatGPTModel       `json:"chat_gpt"`  //通用聊天模型
+	Painting gogpt.ImageRequest `json:"painting"`  //绘画模型
+	ConnId   uint32             `json:"conn_id"`   //会话id
+	ScenesId int                `json:"scenes_id"` //场景Id
+	Token    string             `json:"token"`     //会话Token有就用，没有就默认
+	Timeout  int64              `json:"timeout"`   //但此请求超时时间
 }
+
+// ChatGPTModel ChatGPT 聊天模型
+type ChatGPTModel struct {
+	Model ChatModel                     `json:"model"` //会话模型
+	Role  ChatRole                      `json:"role"`  //会话角色
+	Name  string                        `json:"name"`  //会话别名
+	Msg   []gogpt.ChatCompletionMessage `json:"msg"`
+}
+
+// ScenesType 场景类型
+type ScenesType = int
+
+const (
+	ChatGPTScenes  ScenesType = 1 //通用聊天模型
+	PaintingScenes ScenesType = 2 //DALL-E 2 绘画模型
+)
 
 // ChatModel ChatGPT Model
 type ChatModel = int
@@ -77,18 +94,21 @@ func SwitchGPTRole(role ChatRole) (rely string) {
 }
 
 // GetMsg 获取本次对话文本
-func GetMsg(chatRes gogpt.ChatCompletionResponse) gogpt.ChatCompletionMessage {
-	if len(chatRes.Choices) == 0 {
-		return gogpt.ChatCompletionMessage{}
+func GetMsg(chatRes interface{}) gogpt.ChatCompletionMessage {
+	if val, ok := chatRes.(gogpt.ChatCompletionResponse); ok {
+		if len(val.Choices) == 0 {
+			return gogpt.ChatCompletionMessage{}
+		}
+		return val.Choices[0].Message
 	}
-	return chatRes.Choices[0].Message
+	return gogpt.ChatCompletionMessage{}
 }
 
 // GetProxyConfig 获取代理配置
-func GetProxyConfig(token string) gogpt.ClientConfig {
+func GetProxyConfig(token string, reqTimeout int64) gogpt.ClientConfig {
 	// 是否存在自定义Token，使用用户Token
 	if token != "" {
-		return InitOpenAiAgent(token, global.ProxyPath)
+		return InitOpenAiAgent(token, global.ProxyPath, global.Config.ChatConn.IdleConnTimeout, reqTimeout)
 	} else {
 		// 使用默认Token
 		return global.OpenAiProxy
@@ -96,7 +116,7 @@ func GetProxyConfig(token string) gogpt.ClientConfig {
 }
 
 // InitOpenAiAgent 初始化ChatGPT代理配置
-func InitOpenAiAgent(token string, proxyPath string) gogpt.ClientConfig {
+func InitOpenAiAgent(token string, proxyPath string, idleConnTimeout, reqTimeout int64) gogpt.ClientConfig {
 	config := gogpt.DefaultConfig(token)
 	proxyUrl, err := url.Parse(proxyPath)
 	if err != nil {
@@ -104,11 +124,11 @@ func InitOpenAiAgent(token string, proxyPath string) gogpt.ClientConfig {
 	}
 	transport := &http.Transport{
 		Proxy:           http.ProxyURL(proxyUrl),
-		IdleConnTimeout: time.Duration(global.Config.ChatConn.IdleConnTimeout) * time.Hour, // 后续配置文件管理
+		IdleConnTimeout: time.Duration(idleConnTimeout) * time.Hour, // 后续配置文件管理
 	}
 	config.HTTPClient = &http.Client{
 		Transport: transport,
-		Timeout:   time.Second * time.Duration(global.Config.ChatConn.Timeout),
+		Timeout:   time.Second * time.Duration(reqTimeout),
 	}
 	return config
 }

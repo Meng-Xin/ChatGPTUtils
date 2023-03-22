@@ -7,17 +7,18 @@ import (
 	"chatGPT/pkg/public"
 	"fmt"
 	openai "github.com/sashabaranov/go-openai"
+	log "github.com/sirupsen/logrus"
 )
 
 type ChatService struct {
-	ChatReq chatNet.ChatReq `json:"chat_req"`
+	chatNet.PublicProper
 }
 
 // AddChatWindow 创建对话窗口
 func (c *ChatService) AddChatWindow() public.Response {
 	code := e.SUCCESS
 	// 使用ChatConnManager 进行调用
-	conn := chatNet.NewChatConn(global.SourceConnID.GetConnID(), c.ChatReq)
+	conn := chatNet.NewChatConn(global.SourceConnID.GetConnID(), c.PublicProper)
 	if conn == nil {
 		code = e.ChatGPT_API_Create_Failed
 		return public.Response{
@@ -36,7 +37,7 @@ func (c *ChatService) AddChatWindow() public.Response {
 func (c *ChatService) RemoveChatWindow() public.Response {
 	code := e.SUCCESS
 	// 删除对应conn
-	conn, err := global.ChatConnManager.Get(c.ChatReq.ConnId)
+	conn, err := global.ChatConnManager.Get(c.ConnId)
 	if err != nil {
 		code = e.ChatGPT_Manager_GetConnFail
 		return public.Response{
@@ -55,7 +56,7 @@ func (c *ChatService) RemoveChatWindow() public.Response {
 func (c *ChatService) GetChatWindow() public.Response {
 	code := e.SUCCESS
 	// 获取已创建的会话连接
-	conn, err := global.ChatConnManager.Get(c.ChatReq.ConnId)
+	conn, err := global.ChatConnManager.Get(c.ConnId)
 	if err != nil {
 		code = e.ChatGPT_Manager_GetConnFail
 		return public.Response{
@@ -64,9 +65,9 @@ func (c *ChatService) GetChatWindow() public.Response {
 		}
 	}
 	// 发送消息
-	resData, err := conn.SendMsg(c.ChatReq.Msg)
+	resData, err := conn.SendMsg(c.PublicProper)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Error(err.Error())
 		code = e.ChatGPT_API_Inaccessible
 		return public.Response{
 			Status: code,
@@ -84,7 +85,7 @@ func (c *ChatService) GetChatWindow() public.Response {
 // SetChatWindow set connChatConn[需要校验删除用户信息]
 func (c *ChatService) SetChatWindow() public.Response {
 	code := e.SUCCESS
-	conn, err := global.ChatConnManager.Get(c.ChatReq.ConnId)
+	conn, err := global.ChatConnManager.Get(c.ConnId)
 	if err != nil {
 		code = e.ChatGPT_Manager_GetConnFail
 		return public.Response{
@@ -103,7 +104,7 @@ func (c *ChatService) SetChatWindow() public.Response {
 func (c *ChatService) GetChatToStream() public.Response {
 	code := e.SUCCESS
 	// 获取已创建的会话连接
-	conn, err := global.ChatConnManager.Get(c.ChatReq.ConnId)
+	conn, err := global.ChatConnManager.Get(c.ConnId)
 	if err != nil {
 		code = e.ChatGPT_Manager_GetConnFail
 		return public.Response{
@@ -122,7 +123,7 @@ func (c *ChatService) GetChatToStream() public.Response {
 			}
 			close(msgChan)
 		}()
-		err = conn.(*chatNet.ChatConnection).SendMsgToChatStream(c.ChatReq.Msg, msgChan)
+		err = conn.(*chatNet.ChatConnection).SendMsgToChatStream(c.ChatGPT.Msg)
 	}()
 	return public.Response{
 		Status: code,

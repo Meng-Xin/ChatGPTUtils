@@ -12,7 +12,7 @@ func GlobalInit() {
 
 	// 是否开启代理,代理配置初始化
 	if global.Config.Server.OpenProxy {
-		global.OpenAiProxy = chatNet.InitOpenAiAgent(global.OpenAiToken, global.ProxyPath)
+		global.OpenAiProxy = chatNet.InitOpenAiAgent(global.OpenAiToken, global.ProxyPath, global.Config.ChatConn.IdleConnTimeout, global.Config.ChatConn.Timeout)
 	}
 	// 中间件初始化
 
