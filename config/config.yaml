@@ -8,5 +8,6 @@ proxy:
 chatConn:
   timeout: 20
   idleConnTimeout: 168
-
-
+logSet:
+  logFilePath: "./config/log/"
+  logFileName: "log.log"

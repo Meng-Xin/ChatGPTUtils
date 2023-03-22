@@ -35,6 +35,7 @@ type AllConfig struct {
 	Server   Server   `json:"server" yaml:"server"`
 	Proxy    Proxy    `json:"proxy" yaml:"proxy"`
 	ChatConn ChatConn `json:"chat_conn" yaml:"chatConn"`
+	LogSet   LogSet   `json:"log_set" yaml:"logSet"`
 }
 
 type Server struct {
@@ -55,4 +56,9 @@ type Proxy struct {
 type ChatConn struct {
 	Timeout         int64 `json:"timeout" yaml:"timeout"`                   // Second
 	IdleConnTimeout int64 `json:"idle_conn_timeout" yaml:"idleConnTimeout"` // Hour
+}
+
+type LogSet struct {
+	LogFilePath string `json:"log_file_path" yaml:"logFilePath"`
+	LogFileName string `json:"log_file_name" yaml:"logFileName"`
 }
