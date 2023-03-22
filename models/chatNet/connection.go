@@ -1,15 +1,20 @@
 package chatNet
 
 import (
+	"bytes"
 	"chatGPT/global"
 	"chatGPT/models"
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	gogpt "github.com/sashabaranov/go-openai"
+	log "github.com/sirupsen/logrus"
+	"image/png"
 	"io"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 )
 
@@ -45,22 +50,22 @@ type Scenes struct {
 	painting Painting // 绘画模型
 }
 
-func (s *Scenes) GetScenesID() int {
-	return s.scenesID
+func (c *ChatConnection) GetScenesID() int {
+	return c.scenes.scenesID
 }
 
-func (s *Scenes) SetScenes(publicProper interface{}) {
+func (c *ChatConnection) SetScenes(publicProper interface{}) {
 	proper := publicProper.(PublicProper)
 	switch proper.ScenesId {
 	case ChatGPTScenes:
-		s.scenesID = proper.ScenesId
-		s.chatGPT.model = SwitchGPTModel(proper.ChatGPT.Model)
-		s.chatGPT.role = SwitchGPTRole(proper.ChatGPT.Role)
+		c.scenes.scenesID = proper.ScenesId
+		c.scenes.chatGPT.model = SwitchGPTModel(proper.ChatGPT.Model)
+		c.scenes.chatGPT.role = SwitchGPTRole(proper.ChatGPT.Role)
 	case PaintingScenes:
-		s.scenesID = proper.ScenesId
-		s.painting.size = proper.Painting.Size
-		s.painting.responseFormat = proper.Painting.ResponseFormat
-		s.painting.n = proper.Painting.N
+		c.scenes.scenesID = proper.ScenesId
+		c.scenes.painting.size = proper.Painting.Size
+		c.scenes.painting.responseFormat = proper.Painting.ResponseFormat
+		c.scenes.painting.n = proper.Painting.N
 	}
 }
 
@@ -87,7 +92,7 @@ func NewChatConn(connId uint32, req PublicProper) *ChatConnection {
 		client:   connConfig.HTTPClient,
 		property: make(map[string]interface{}),
 	}
-	c.scenes.SetScenes(req)
+	c.SetScenes(req)
 	// 初始聊天记录
 	c.property[HistoryMsgTag] = make([]gogpt.ChatCompletionMessage, 0)
 	// 添加到管理模块
@@ -155,10 +160,10 @@ func (c *ChatConnection) SendMsg(req interface{}) (resp interface{}, err error) 
 	case ChatGPTScenes:
 		return c.sendToChatGPT(reqData.ChatGPT.Msg)
 	case PaintingScenes:
-
+		return c.sendToDALL(reqData.Painting)
 	}
 
-	return resp, err
+	return resp, errors.New("ChatConn is not found Scenes！")
 }
 
 func (c *ChatConnection) sendToChatGPT(data []gogpt.ChatCompletionMessage) (interface{}, error) {
@@ -194,6 +199,48 @@ func (c *ChatConnection) sendToChatGPT(data []gogpt.ChatCompletionMessage) (inte
 	historyMsg = append(historyMsg, aiMsg)
 	c.SetProperty(HistoryMsgTag, historyMsg)
 	return resp, nil
+}
+
+func (c *ChatConnection) sendToDALL(data gogpt.ImageRequest) (interface{}, error) {
+	switch data.ResponseFormat {
+	case gogpt.CreateImageResponseFormatURL:
+		// 构建请求
+		respUrl, err := c.Conn.CreateImage(c.Ctx, data)
+		if err != nil {
+			return nil, err
+		}
+		log.Info(respUrl.Data[0].URL)
+		return respUrl.Data[0].URL, nil
+	case gogpt.CreateImageResponseFormatB64JSON:
+		respBase64, err := c.Conn.CreateImage(c.Ctx, data)
+		if err != nil {
+			return nil, err
+		}
+		imgBytes, err := base64.StdEncoding.DecodeString(respBase64.Data[0].B64JSON)
+		if err != nil {
+			fmt.Printf("Base64 decode error: %v\n", err)
+			return nil, err
+		}
+		r := bytes.NewReader(imgBytes)
+		imgData, err := png.Decode(r)
+		if err != nil {
+			return nil, err
+		}
+
+		file, err := os.Create("image.png")
+		if err != nil {
+			fmt.Printf("File creation error: %v\n", err)
+			return nil, err
+		}
+		defer file.Close()
+
+		if err := png.Encode(file, imgData); err != nil {
+			fmt.Printf("PNG encode error: %v\n", err)
+			return nil, err
+		}
+		return respBase64.Data[0].B64JSON, nil
+	}
+	return nil, errors.New("未匹配到绘画模型参数！")
 }
 
 func (c *ChatConnection) SendMsgToChatStream(data []gogpt.ChatCompletionMessage) error {

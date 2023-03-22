@@ -42,18 +42,6 @@ const (
 	GPT3Dot5Turbo     ChatModel = 1
 )
 
-func SwitchGPTModel(model ChatModel) (rely string) {
-	switch model {
-	case GPT3Dot5Turbo0301:
-		rely = gogpt.GPT3Dot5Turbo0301
-	case GPT3Dot5Turbo:
-		rely = gogpt.GPT3Dot5Turbo
-	default:
-		rely = gogpt.GPT3Dot5Turbo
-	}
-	return rely
-}
-
 // ChatRole ChatGPT Role
 type ChatRole = int
 
@@ -66,32 +54,18 @@ const (
 	RoleToAgent     ChatRole = 6 // 代理
 )
 
-// ChatPropertyTag
 type ChatPropertyTag = string
 
 const (
 	HistoryMsgTag ChatPropertyTag = "ChatHistory"
 )
 
-func SwitchGPTRole(role ChatRole) (rely string) {
-	switch role {
-	case RoleToSystem:
-		rely = "system"
-	case RoleToUser:
-		rely = "user"
-	case RoleToAssistant:
-		rely = "assistant"
-	case RoleToAi:
-		rely = "ai"
-	case RoleToHuman:
-		rely = "human"
-	case RoleToAgent:
-		rely = "agent"
-	default:
-		rely = "user"
-	}
-	return rely
-}
+type PaintRespType = int
+
+const (
+	PaintURL    PaintRespType = 1 // 绘画响应：URL
+	PaintBase64 PaintRespType = 2 // 绘画响应：Base64
+)
 
 // GetMsg 获取本次对话文本
 func GetMsg(chatRes interface{}) gogpt.ChatCompletionMessage {
@@ -102,6 +76,22 @@ func GetMsg(chatRes interface{}) gogpt.ChatCompletionMessage {
 		return val.Choices[0].Message
 	}
 	return gogpt.ChatCompletionMessage{}
+}
+
+// GetImage 获取绘画Image
+func GetImage(dall interface{}, proper PublicProper) string {
+	if val, ok := dall.(gogpt.ImageResponse); ok {
+		if len(val.Data) == 0 {
+			return ""
+		}
+		switch proper.Painting.ResponseFormat {
+		case gogpt.CreateImageResponseFormatURL:
+			return val.Data[0].URL
+		case gogpt.CreateImageResponseFormatB64JSON:
+			return val.Data[0].B64JSON
+		}
+	}
+	return ""
 }
 
 // GetProxyConfig 获取代理配置
@@ -131,4 +121,45 @@ func InitOpenAiAgent(token string, proxyPath string, idleConnTimeout, reqTimeout
 		Timeout:   time.Second * time.Duration(reqTimeout),
 	}
 	return config
+}
+
+func SwitchGPTModel(model ChatModel) (rely string) {
+	switch model {
+	case GPT3Dot5Turbo0301:
+		rely = gogpt.GPT3Dot5Turbo0301
+	case GPT3Dot5Turbo:
+		rely = gogpt.GPT3Dot5Turbo
+	default:
+		rely = gogpt.GPT3Dot5Turbo
+	}
+	return rely
+}
+func SwitchGPTRole(role ChatRole) (rely string) {
+	switch role {
+	case RoleToSystem:
+		rely = "system"
+	case RoleToUser:
+		rely = "user"
+	case RoleToAssistant:
+		rely = "assistant"
+	case RoleToAi:
+		rely = "ai"
+	case RoleToHuman:
+		rely = "human"
+	case RoleToAgent:
+		rely = "agent"
+	default:
+		rely = "user"
+	}
+	return rely
+}
+
+func SwitchPaintResp(from int) string {
+	switch from {
+	case PaintURL:
+		return gogpt.CreateImageResponseFormatURL
+	case PaintBase64:
+		return gogpt.CreateImageResponseFormatB64JSON
+	}
+	return gogpt.CreateImageResponseFormatURL
 }

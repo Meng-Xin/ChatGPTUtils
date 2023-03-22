@@ -74,10 +74,16 @@ func (c *ChatService) GetChatWindow() public.Response {
 			Msg:    e.GetMsg(code),
 		}
 	}
-	resMsg := chatNet.GetMsg(resData)
+	var finalRes interface{}
+	switch conn.GetScenesID() {
+	case chatNet.ChatGPTScenes:
+		finalRes = chatNet.GetMsg(resData)
+	case chatNet.PaintingScenes:
+		finalRes = resData
+	}
 	return public.Response{
 		Status: code,
-		Data:   resMsg,
+		Data:   finalRes,
 		Msg:    e.GetMsg(code),
 	}
 }
