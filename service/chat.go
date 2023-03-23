@@ -122,8 +122,9 @@ func (c *ChatService) GetChatToStream() public.Response {
 	msgChan := make(chan string, 1)
 	go func() {
 		defer func() {
-			log := recover()
-			fmt.Println(log)
+			if errMsg := recover(); errMsg != nil {
+				log.Error(errMsg)
+			}
 			if err != nil {
 				code = e.ChatGPT_Manager_StreamFail
 			}
