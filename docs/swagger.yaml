@@ -1,0 +1,141 @@
+definitions:
+  public.Response:
+    properties:
+      data: {}
+      msg:
+        type: string
+      status:
+        type: integer
+    type: object
+  request.AddToScenesRequest:
+    properties:
+      chat_gpt:
+        $ref: '#/definitions/request.SetChatScenes'
+      paint:
+        $ref: '#/definitions/request.SetPaintScenes'
+      scenes_id:
+        example: 1
+        type: integer
+      timeout:
+        description: 但此请求超时时间
+        example: 20
+        type: integer
+      token:
+        description: Token
+        example: ""
+        type: string
+    type: object
+  request.ChatGPTMsg:
+    properties:
+      content:
+        description: 具体内容
+        example: Hello
+        type: string
+      name:
+        description: 本次会话名称
+        example: DefaultWindow
+        type: string
+      role:
+        description: 角色[可不填]
+        example: user
+        type: string
+    type: object
+  request.ChatGPTReq:
+    properties:
+      model:
+        description: 模型选择
+        example: 1
+        type: integer
+      msg:
+        description: 聊天消息
+        items:
+          $ref: '#/definitions/request.ChatGPTMsg'
+        type: array
+    type: object
+  request.ChatToScenesRequest:
+    properties:
+      chat_gpt:
+        allOf:
+        - $ref: '#/definitions/request.ChatGPTReq'
+        description: 聊天信息
+      conn_id:
+        description: 会话id
+        example: 1
+        type: integer
+    type: object
+  request.SetChatScenes:
+    properties:
+      model:
+        description: 会话模型
+        example: 1
+        type: integer
+      name:
+        description: 会话标题
+        example: DefaultWindow
+        type: string
+      role:
+        description: 会话角色
+        example: user
+        type: string
+    type: object
+  request.SetPaintScenes:
+    properties:
+      "n":
+        description: 绘画数量
+        example: 2
+        type: integer
+      response_format:
+        description: 绘画相应格式
+        example: url
+        type: string
+      size:
+        description: 绘画尺寸
+        example: 255x255
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/openai/addScenes:
+    post:
+      parameters:
+      - description: 新建场景：1聊天、2画图可选
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddToScenesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/public.Response'
+        "400":
+          description: 请求错误
+          schema:
+            $ref: '#/definitions/public.Response'
+      summary: 创建会话场景
+  /api/v1/openai/scenesChat:
+    post:
+      parameters:
+      - description: 聊天场景
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ChatToScenesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/public.Response'
+        "400":
+          description: 请求错误
+          schema:
+            $ref: '#/definitions/public.Response'
+      summary: 聊天场景
+swagger: "2.0"

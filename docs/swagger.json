@@ -1,0 +1,208 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/api/v1/openai/addScenes": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "创建会话场景",
+                "parameters": [
+                    {
+                        "description": "新建场景：1聊天、2画图可选",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.AddToScenesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/public.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "请求错误",
+                        "schema": {
+                            "$ref": "#/definitions/public.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/openai/scenesChat": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "聊天场景",
+                "parameters": [
+                    {
+                        "description": "聊天场景",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ChatToScenesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/public.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "请求错误",
+                        "schema": {
+                            "$ref": "#/definitions/public.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "public.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "msg": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "request.AddToScenesRequest": {
+            "type": "object",
+            "properties": {
+                "chat_gpt": {
+                    "$ref": "#/definitions/request.SetChatScenes"
+                },
+                "paint": {
+                    "$ref": "#/definitions/request.SetPaintScenes"
+                },
+                "scenes_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "timeout": {
+                    "description": "但此请求超时时间",
+                    "type": "integer",
+                    "example": 20
+                },
+                "token": {
+                    "description": "Token",
+                    "type": "string",
+                    "example": ""
+                }
+            }
+        },
+        "request.ChatGPTMsg": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "description": "具体内容",
+                    "type": "string",
+                    "example": "Hello"
+                },
+                "name": {
+                    "description": "本次会话名称",
+                    "type": "string",
+                    "example": "DefaultWindow"
+                },
+                "role": {
+                    "description": "角色[可不填]",
+                    "type": "string",
+                    "example": "user"
+                }
+            }
+        },
+        "request.ChatGPTReq": {
+            "type": "object",
+            "properties": {
+                "model": {
+                    "description": "模型选择",
+                    "type": "integer",
+                    "example": 1
+                },
+                "msg": {
+                    "description": "聊天消息",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.ChatGPTMsg"
+                    }
+                }
+            }
+        },
+        "request.ChatToScenesRequest": {
+            "type": "object",
+            "properties": {
+                "chat_gpt": {
+                    "description": "聊天信息",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/request.ChatGPTReq"
+                        }
+                    ]
+                },
+                "conn_id": {
+                    "description": "会话id",
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "request.SetChatScenes": {
+            "type": "object",
+            "properties": {
+                "model": {
+                    "description": "会话模型",
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "description": "会话标题",
+                    "type": "string",
+                    "example": "DefaultWindow"
+                },
+                "role": {
+                    "description": "会话角色",
+                    "type": "string",
+                    "example": "user"
+                }
+            }
+        },
+        "request.SetPaintScenes": {
+            "type": "object",
+            "properties": {
+                "n": {
+                    "description": "绘画数量",
+                    "type": "integer",
+                    "example": 2
+                },
+                "response_format": {
+                    "description": "绘画相应格式",
+                    "type": "string",
+                    "example": "url"
+                },
+                "size": {
+                    "description": "绘画尺寸",
+                    "type": "string",
+                    "example": "255x255"
+                }
+            }
+        }
+    }
+}
