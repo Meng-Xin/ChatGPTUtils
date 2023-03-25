@@ -1,4 +1,4 @@
-package chatNet
+package conn
 
 import (
 	"bytes"

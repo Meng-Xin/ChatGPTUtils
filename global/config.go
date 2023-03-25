@@ -2,8 +2,9 @@ package global
 
 import (
 	"chatGPT/config"
-	"chatGPT/core"
+	"chatGPT/core/idefine"
 	openai "github.com/sashabaranov/go-openai"
+	"gorm.io/gorm"
 	"sync"
 )
 
@@ -13,10 +14,11 @@ const (
 )
 
 var (
-	OpenAiProxy     openai.ClientConfig // OpenAIProxy 代理配置
-	Config          *config.AllConfig   // 全局config
-	SourceConnID    *ConnID             // SourceConnID 用于生成ConnID
-	ChatConnManager core.IConnManager   // ChatConnManager 连接管理
+	OpenAiProxy     openai.ClientConfig  // OpenAIProxy 代理配置
+	Config          *config.AllConfig    // 全局config
+	SourceConnID    *ConnID              // SourceConnID 用于生成ConnID
+	ChatConnManager idefine.IConnManager // ChatConnManager 连接管理
+	MysqlDB         *gorm.DB             // MysqlDB
 )
 
 type ConnID struct {

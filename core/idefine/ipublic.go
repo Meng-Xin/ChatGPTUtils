@@ -1,4 +1,4 @@
-package core
+package idefine
 
 type IPublic interface {
 	func()

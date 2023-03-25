@@ -2,25 +2,32 @@ package service
 
 import (
 	"chatGPT/initialize"
-	"chatGPT/models/chatNet"
+	"chatGPT/models/request"
+	"chatGPT/pkg/e"
 	"fmt"
-	openai "github.com/sashabaranov/go-gpt3"
 	"testing"
 )
 
 func TestAddChatWindow(t *testing.T) {
 	// 加载初始化文件
 	initialize.GlobalInit()
-	chatObj := &ChatService{
-		chatNet.ChatReq{
-			Msg: []openai.ChatCompletionMessage{{"user", "你知道那些游戏算法"}},
+	chatObj := ChatService{}
+	req := request.AddToScenesRequest{
+		Token:   "",
+		Timeout: 20,
+		Scenes: request.Scenes{
+			ScenesID: 1,
+			ChatGPT: request.SetChatScenes{
+				Model: 1,
+				Role:  "system",
+				Name:  "测试",
+			},
 		},
 	}
-	res := chatObj.AddChatWindow()
-	if dialog, ok := res.Data.(*openai.ChatCompletionResponse); ok {
-		for _, val := range dialog.Choices {
-			fmt.Printf("%+v\n", val)
-		}
+	res := chatObj.AddToScenes(req)
+	if res.Status != e.SUCCESS {
+		t.Error("ChatGPT is not Role Msg")
+	} else {
+		fmt.Printf("AddToScenes RESP %+v", res)
 	}
-
 }

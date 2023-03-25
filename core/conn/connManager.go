@@ -1,33 +1,33 @@
-package chatNet
+package conn
 
 import (
-	"chatGPT/core"
+	"chatGPT/core/idefine"
 	"errors"
 	"sync"
 )
 
 type ConnManager struct {
 	// 链接管理集合
-	chatConnections map[uint32]core.IConnection
+	chatConnections map[uint32]idefine.IConnection
 	// 链接管理读写锁
 	chatConnLock sync.RWMutex
 }
 
 func NewChatConnManager() *ConnManager {
 	return &ConnManager{
-		chatConnections: make(map[uint32]core.IConnection),
+		chatConnections: make(map[uint32]idefine.IConnection),
 	}
 }
 
 // Add 添加一个链接到管理模块中
-func (c ConnManager) Add(conn core.IConnection) {
+func (c ConnManager) Add(conn idefine.IConnection) {
 	c.chatConnLock.Lock()
 	defer c.chatConnLock.Unlock()
 	c.chatConnections[conn.GetConnID()] = conn
 }
 
 // Remove 从管理模块中删除对应链接
-func (c ConnManager) Remove(conn core.IConnection) {
+func (c ConnManager) Remove(conn idefine.IConnection) {
 	c.chatConnLock.Lock()
 	defer c.chatConnLock.Unlock()
 	conn.Stop()
@@ -35,7 +35,7 @@ func (c ConnManager) Remove(conn core.IConnection) {
 }
 
 // Get 从管理模块中获取ConnID对应链接
-func (c ConnManager) Get(connID uint32) (core.IConnection, error) {
+func (c ConnManager) Get(connID uint32) (idefine.IConnection, error) {
 	c.chatConnLock.RLock()
 	defer c.chatConnLock.RUnlock()
 	if conn, ok := c.chatConnections[connID]; ok {

@@ -1,4 +1,4 @@
-package core
+package idefine
 
 import (
 	gogpt "github.com/sashabaranov/go-openai"
@@ -6,10 +6,8 @@ import (
 )
 
 type IConnection interface {
-	// GetScenesID 获取场景ID
-	GetScenesID() int
-	//  SetScenes 设置场景
-	SetScenes(interface{})
+	// GetScenes 获取场景
+	GetScenes() IScenes
 	// Start 	启动链接，当前链接开始工作
 	Start()
 	// Stop		停止链接，结束当前链接的工作

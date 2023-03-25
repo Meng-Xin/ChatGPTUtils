@@ -11,3 +11,10 @@ chatConn:
 logSet:
   logFilePath: "./config/log/"
   logFileName: "log.log"
+mysql:
+  username: "root"
+  password: "root"
+  db-name: "chat_utils"
+  path: "127.0.0.1"
+  port: "3306"
+  autoMigrate: false

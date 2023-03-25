@@ -36,6 +36,7 @@ type AllConfig struct {
 	Proxy    Proxy    `json:"proxy" yaml:"proxy"`
 	ChatConn ChatConn `json:"chat_conn" yaml:"chatConn"`
 	LogSet   LogSet   `json:"log_set" yaml:"logSet"`
+	Mysql    Mysql    `json:"mysql" yaml:"mysql"`
 }
 
 type Server struct {

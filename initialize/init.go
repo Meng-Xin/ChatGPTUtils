@@ -2,8 +2,9 @@ package initialize
 
 import (
 	"chatGPT/config"
+	chatNet2 "chatGPT/core/conn"
+	"chatGPT/dao"
 	"chatGPT/global"
-	"chatGPT/models/chatNet"
 )
 
 func GlobalInit() {
@@ -12,12 +13,14 @@ func GlobalInit() {
 
 	// 是否开启代理,代理配置初始化
 	if global.Config.Server.OpenProxy {
-		global.OpenAiProxy = chatNet.InitOpenAiAgent(global.OpenAiToken, global.ProxyPath, global.Config.ChatConn.IdleConnTimeout, global.Config.ChatConn.Timeout)
+		global.OpenAiProxy = chatNet2.InitOpenAiAgent(global.OpenAiToken, global.ProxyPath, global.Config.ChatConn.IdleConnTimeout, global.Config.ChatConn.Timeout)
 	}
+	// 数据库引擎初始化
+	dao.InitDatabase(global.Config.Mysql.Dsn(), "")
 	// 中间件初始化
 
 	// ChatID Init
 	global.SourceConnID = &global.ConnID{}
 	// ChatConnectionManager Init
-	global.ChatConnManager = chatNet.NewChatConnManager()
+	global.ChatConnManager = chatNet2.NewChatConnManager()
 }

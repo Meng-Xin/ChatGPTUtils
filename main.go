@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "chatGPT/docs"
 	"chatGPT/global"
 	"chatGPT/initialize"
 	"chatGPT/router"

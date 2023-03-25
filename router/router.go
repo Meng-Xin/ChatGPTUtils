@@ -1,10 +1,12 @@
 package router
 
 import (
-	api "chatGPT/api/v1"
+	api "chatGPT/api/v1/chat"
 	"chatGPT/middle"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func NewRouter() *gin.Engine {
@@ -20,14 +22,17 @@ func NewRouter() *gin.Engine {
 	publicGroup.GET("/", func(c *gin.Context) {
 		c.JSON(200, "Hello welcome Meng-Xin")
 	})
+	// swagger
+	publicGroup.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	// V1管理
 	v1 := r.Group("/api/v1")
 	{
-		v1.POST("/chat/addWindow", api.CreateChat)
-		v1.GET("/chat/getWindow", api.GetChat)
-		v1.GET("/chat/getStream", api.GetChatToStream)
-		v1.PUT("/chat/setWindow", api.SetChat)
-		v1.DELETE("/chat/deleteWindow", api.DeleteChat)
+		v1.POST("/openai/addScenes", api.AddScenes)
+		v1.GET("/openai/getScenes", api.GetScenes)
+		v1.POST("/openai/scenesChat", api.ScenesChat)
+		v1.PUT("/openai/setScenes", api.SetScenes)
+		v1.DELETE("/openai/deleteScenes", api.DeleteScenes)
 	}
 	return r
 }

@@ -1,4 +1,4 @@
-package core
+package idefine
 
 type IConnManager interface {
 	// Add 添加链接

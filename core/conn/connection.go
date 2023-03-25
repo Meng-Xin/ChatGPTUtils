@@ -1,9 +1,12 @@
-package chatNet
+package conn
 
 import (
 	"bytes"
+	"chatGPT/core/idefine"
 	"chatGPT/global"
 	"chatGPT/models"
+	"chatGPT/models/request"
+	"chatGPT/utils"
 	"context"
 	"encoding/base64"
 	"errors"
@@ -31,73 +34,44 @@ type ChatConnection struct {
 	ConnID uint32
 	// 当前连接上下文[创建链接时指定]
 	Ctx context.Context
+	// 当前会话场景
+	Scenes *Scenes
 
 	// HttpClient gogpt库小写的Conn导致无法获取到http链接指针，只能自己拿
 	client *http.Client
 	//  当前链接状态
 	isClosed bool
-	// 当前会话场景
-	scenes Scenes
 	// 链接属性集合
 	property map[string]interface{}
 	// 保护连接的锁
 	propertyLock sync.RWMutex
 }
 
-type Scenes struct {
-	scenesID int      // 场景ID
-	chatGPT  ChatGPT  // 聊天模型
-	painting Painting // 绘画模型
-}
-
-func (c *ChatConnection) GetScenesID() int {
-	return c.scenes.scenesID
-}
-
-func (c *ChatConnection) SetScenes(publicProper interface{}) {
-	proper := publicProper.(PublicProper)
-	switch proper.ScenesId {
-	case ChatGPTScenes:
-		c.scenes.scenesID = proper.ScenesId
-		c.scenes.chatGPT.model = SwitchGPTModel(proper.ChatGPT.Model)
-		c.scenes.chatGPT.role = SwitchGPTRole(proper.ChatGPT.Role)
-	case PaintingScenes:
-		c.scenes.scenesID = proper.ScenesId
-		c.scenes.painting.size = proper.Painting.Size
-		c.scenes.painting.responseFormat = proper.Painting.ResponseFormat
-		c.scenes.painting.n = proper.Painting.N
-	}
-}
-
-// ChatGPT 通用聊天模型
-type ChatGPT struct {
-	model string // 当前链接模型[创建链接时指定]
-	role  string // [创建链接时指定] 角色 ai：聊天对象为ai human：聊天对象为正常人类 agent：聊天对象为代理
-}
-
-// Painting DALL-E 2 image generation
-type Painting struct {
-	size           string // 绘画尺寸
-	responseFormat string // 绘画相应格式
-	n              int    // 绘画数量
-}
-
 // NewChatConn 创建一个chatGPT connection 实例，connID：链接id，model：GPT模型 role：GPT角色 token：用户自定义Token
-func NewChatConn(connId uint32, req PublicProper) *ChatConnection {
+func NewChatConn(connId uint32, req request.AddToScenesRequest) *ChatConnection {
 	connConfig := GetProxyConfig(req.Token, req.Timeout)
 	c := &ChatConnection{
 		Conn:     gogpt.NewClientWithConfig(connConfig),
 		ConnID:   connId,
 		Ctx:      context.Background(),
+		Scenes:   &Scenes{},
 		client:   connConfig.HTTPClient,
 		property: make(map[string]interface{}),
 	}
-	c.SetScenes(req)
+	err := c.Scenes.SetScenes(req.Scenes)
+	if err != nil {
+		log.Error(err.Error())
+		return nil
+	}
 	// 初始聊天记录
 	c.property[HistoryMsgTag] = make([]gogpt.ChatCompletionMessage, 0)
 	// 添加到管理模块
 	global.ChatConnManager.Add(c)
 	return c
+}
+
+func (c *ChatConnection) GetScenes() idefine.IScenes {
+	return c.Scenes
 }
 
 func (c *ChatConnection) Start() {
@@ -152,26 +126,31 @@ func (c *ChatConnection) SendMsg(req interface{}) (resp interface{}, err error) 
 	if c.isClosed {
 		return resp, errors.New("The httpconnection is closed")
 	}
-	reqData, ok := req.(PublicProper)
+	reqData, ok := req.(request.ChatGPTReq)
 	if !ok {
 		return nil, errors.New("SendMsg 入参不是 PublicProper")
 	}
-	switch c.scenes.scenesID {
+	switch c.Scenes.ScenesID {
 	case ChatGPTScenes:
-		return c.sendToChatGPT(reqData.ChatGPT.Msg)
+		return c.sendToChatGPT(reqData.Msg)
 	case PaintingScenes:
-		return c.sendToDALL(reqData.Painting)
+		//return c.sendToDALL(reqData.Painting)
 	}
 
 	return resp, errors.New("ChatConn is not found Scenes！")
 }
 
-func (c *ChatConnection) sendToChatGPT(data []gogpt.ChatCompletionMessage) (interface{}, error) {
+func (c *ChatConnection) sendToChatGPT(val []request.ChatGPTMsg) (interface{}, error) {
 	var historyMsg []gogpt.ChatCompletionMessage
+	data := make([]gogpt.ChatCompletionMessage, len(val))
+	// 结构体属性相同直接强转
+	for i, v := range val {
+		data[i] = gogpt.ChatCompletionMessage(v)
+	}
 	// 替换角色
 	for k, datum := range data {
 		if datum.Role == "" {
-			data[k].Role = c.scenes.chatGPT.role
+			data[k].Role = c.Scenes.ChatGPT.Role
 		}
 	}
 	// 获取历史消息并保存玩家对话
@@ -195,7 +174,7 @@ func (c *ChatConnection) sendToChatGPT(data []gogpt.ChatCompletionMessage) (inte
 		return resp, err
 	}
 	// 保存Ai对话
-	aiMsg := GetMsg(resp)
+	aiMsg := utils.GetMsg(resp)
 	historyMsg = append(historyMsg, aiMsg)
 	c.SetProperty(HistoryMsgTag, historyMsg)
 	return resp, nil
@@ -250,7 +229,7 @@ func (c *ChatConnection) SendMsgToChatStream(data []gogpt.ChatCompletionMessage)
 	// 替换角色
 	for k, datum := range data {
 		if datum.Role == "" {
-			data[k].Role = c.scenes.chatGPT.role
+			data[k].Role = c.Scenes.ChatGPT.Role
 		}
 	}
 

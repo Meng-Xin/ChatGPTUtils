@@ -1,4 +1,4 @@
-package chatNet
+package conn
 
 import (
 	"chatGPT/global"
@@ -66,17 +66,6 @@ const (
 	PaintURL    PaintRespType = 1 // 绘画响应：URL
 	PaintBase64 PaintRespType = 2 // 绘画响应：Base64
 )
-
-// GetMsg 获取本次对话文本
-func GetMsg(chatRes interface{}) gogpt.ChatCompletionMessage {
-	if val, ok := chatRes.(gogpt.ChatCompletionResponse); ok {
-		if len(val.Choices) == 0 {
-			return gogpt.ChatCompletionMessage{}
-		}
-		return val.Choices[0].Message
-	}
-	return gogpt.ChatCompletionMessage{}
-}
 
 // GetImage 获取绘画Image
 func GetImage(dall interface{}, proper PublicProper) string {
