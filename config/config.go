@@ -8,7 +8,7 @@ import (
 func InitLoadConfig() *AllConfig {
 	config := viper.New()
 	// 设置读取路径
-	config.AddConfigPath("H:/code/go/private/demo/ChartGPT/config")
+	config.AddConfigPath("./config")
 	// 设置读取文件名字
 	config.SetConfigName("config")
 	// 设置读取文件类型
