@@ -10,3 +10,11 @@ type Chat struct {
 
 	UserId uint `json:"user_id"`
 }
+
+func SaveChatScenes(connId uint32, chatModel int, History string) *Chat {
+	return &Chat{
+		ConnId:     connId,
+		ChatModel:  chatModel,
+		HistoryMsg: History,
+	}
+}

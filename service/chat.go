@@ -3,6 +3,7 @@ package service
 import (
 	chatNet2 "chatGPT/core/conn"
 	"chatGPT/global"
+	"chatGPT/model"
 	"chatGPT/model/request"
 	"chatGPT/model/response"
 	"chatGPT/pkg/e"
@@ -14,6 +15,8 @@ import (
 )
 
 type ChatService struct {
+	model.User
+	model.Chat
 }
 
 // AddToScenes 新建场景
@@ -71,6 +74,25 @@ func (c *ChatService) ChatToScenes(data request.ChatToScenesRequest) public.Resp
 
 func (c *ChatService) PaintToScenes(data request.PaintToScenesRequest) {
 
+}
+
+// SaveScenes 保存场景
+func (c *ChatService) SaveScenes(uid uint, data request.SaveToScenesRequest) public.Response {
+	code := e.SUCCESS
+	// 获取当前场景
+	_, err := global.ChatConnManager.Get(data.ConnId)
+	if err != nil {
+		code = e.ChatGPT_Manager_GetConnFail
+		return public.Response{
+			Status: code,
+			Msg:    e.GetMsg(code),
+		}
+	}
+	//conn.(*conn.)
+	// 当前链接绑定用户是否对应
+	//chatDao := mysql.NewChatDB(context.Background())
+	//chatDao.SaveScenes(uid)
+	return public.Response{}
 }
 
 // SetChatWindow set connChatConn[需要校验删除用户信息]

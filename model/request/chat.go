@@ -32,6 +32,11 @@ type SetToScenesRequest struct {
 type DeleteToConnRequest struct {
 }
 
+// SaveToScenesRequest 保存场景
+type SaveToScenesRequest struct {
+	ConnId uint32 `json:"conn_id" example:"1"` // 链接ID
+}
+
 type ChatGPTReq struct {
 	Model int          `json:"model" example:"1"` // 模型选择
 	Msg   []ChatGPTMsg `json:"msg"`               // 聊天消息

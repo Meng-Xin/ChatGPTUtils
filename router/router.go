@@ -28,8 +28,11 @@ func NewRouter() *gin.Engine {
 	// V1管理
 	v1 := r.Group("/api/v1")
 	{
-		v1.POST("/openai/addScenes", api.AddScenes)
+		openaiPri := r.Group("/openai")
+		openaiPri.Use()
 		v1.GET("/openai/getScenes", api.GetScenes)
+		v1.POST("/openai/addScenes", api.AddScenes)
+		v1.POST("/openai/saveScenes", api.SaveScenes)
 		v1.POST("/openai/scenesChat", api.ScenesChat)
 		v1.PUT("/openai/setScenes", api.SetScenes)
 		v1.DELETE("/openai/deleteScenes", api.DeleteScenes)

@@ -62,6 +62,18 @@ func DeleteScenes(c *gin.Context) {
 
 }
 
+func SaveScenes(c *gin.Context) {
+	// 拿到对话信息创建对话
+	var chat request.SaveToScenesRequest
+	if err := c.ShouldBindJSON(&chat); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	//server := &service.ChatService{User:model.User{UUID: }}
+	//res := server.SaveScenes(chat)
+	//c.JSON(http.StatusOK, res)
+}
+
 //func GetChatToStream(c *gin.Context) {
 //	// 拿到对话信息创建对话
 //	var chatInfo *service.ChatService

@@ -1,4 +1,4 @@
-package initialize
+package dao
 
 import (
 	"chatGPT/global"
