@@ -1,7 +1,7 @@
 package chat
 
 import (
-	"chatGPT/models/request"
+	"chatGPT/model/request"
 	"chatGPT/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -43,7 +43,15 @@ func ScenesChat(c *gin.Context) {
 }
 
 func GetScenes(c *gin.Context) {
-
+	// 拿到对话信息创建对话
+	var chat request.ChatToScenesRequest
+	if err := c.ShouldBindJSON(&chat); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var server *service.ChatService
+	res := server.ChatToScenes(chat)
+	c.JSON(http.StatusOK, res)
 }
 
 func SetScenes(c *gin.Context) {

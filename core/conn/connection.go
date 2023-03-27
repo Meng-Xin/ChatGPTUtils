@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"chatGPT/core/idefine"
 	"chatGPT/global"
-	"chatGPT/models"
-	"chatGPT/models/request"
+	"chatGPT/model"
+	"chatGPT/model/request"
 	"chatGPT/utils"
 	"context"
 	"encoding/base64"
@@ -27,7 +27,7 @@ import (
 
 type ChatConnection struct {
 	// 当前Conn属于那个用户
-	BelongPerson models.User
+	BelongPerson model.User
 	// 当前ChatGPT Socket TCP 套接字
 	Conn *gogpt.Client
 	// 获取 ConnID

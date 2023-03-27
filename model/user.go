@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"gorm.io/gorm"
@@ -7,10 +7,9 @@ import (
 type User struct {
 	gorm.Model
 	UUID     string `json:"uuid"`      //UUID
+	UserName string `json:"user_name"` //账号
 	NickName string `json:"nick_name"` //昵称
-	Account  string `json:"account"`   //账号
 	Password string `json:"password"`  //密码
-	ConnId   uint32 `json:"conn_id"`   //会话id,有就复用conn
 
 	ChatConfig []Chat `json:"chat_msg"`
 }

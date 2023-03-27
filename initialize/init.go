@@ -3,7 +3,6 @@ package initialize
 import (
 	"chatGPT/config"
 	chatNet2 "chatGPT/core/conn"
-	"chatGPT/dao"
 	"chatGPT/global"
 )
 
@@ -16,7 +15,7 @@ func GlobalInit() {
 		global.OpenAiProxy = chatNet2.InitOpenAiAgent(global.OpenAiToken, global.ProxyPath, global.Config.ChatConn.IdleConnTimeout, global.Config.ChatConn.Timeout)
 	}
 	// 数据库引擎初始化
-	dao.InitDatabase(global.Config.Mysql.Dsn(), "")
+	InitDatabase(global.Config.Mysql.Dsn(), "")
 	// 中间件初始化
 
 	// ChatID Init

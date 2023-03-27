@@ -2,7 +2,7 @@ package service
 
 import (
 	"chatGPT/initialize"
-	"chatGPT/models/request"
+	"chatGPT/model/request"
 	"chatGPT/pkg/e"
 	"fmt"
 	"testing"

@@ -3,8 +3,8 @@ package service
 import (
 	chatNet2 "chatGPT/core/conn"
 	"chatGPT/global"
-	"chatGPT/models/request"
-	"chatGPT/models/response"
+	"chatGPT/model/request"
+	"chatGPT/model/response"
 	"chatGPT/pkg/e"
 	"chatGPT/pkg/public"
 	"chatGPT/utils"

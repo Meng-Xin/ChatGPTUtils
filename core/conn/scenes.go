@@ -1,7 +1,7 @@
 package conn
 
 import (
-	"chatGPT/models/request"
+	"chatGPT/model/request"
 	"errors"
 )
 

@@ -1,8 +1,9 @@
-package dao
+package initialize
 
 import (
 	"chatGPT/global"
-	"chatGPT/models"
+	"chatGPT/model"
+	"context"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
@@ -49,8 +50,13 @@ func InitDatabase(connRead, connWrite string) {
 func Migration() {
 	//自动迁移模
 	global.MysqlDB.Set("gorm:table_options", "charset=utf8mb4").AutoMigrate(
-		&models.User{},
-		&models.Chat{},
+		&model.User{},
+		&model.Chat{},
 	)
 	log.Info("register table success")
+}
+
+func NewDao(ctx context.Context) *gorm.DB {
+	db := global.MysqlDB
+	return db.WithContext(ctx)
 }
